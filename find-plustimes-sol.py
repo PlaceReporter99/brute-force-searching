@@ -1,6 +1,13 @@
 # https://codegolf.stackexchange.com/questions/287678/generate-a-large-number-using-and-%C3%97
 # Input to this program is made as arguments, where the first argument indicates what program length to start from, and 
 
+from flask import Flask
+app = Flask(__name__)
+
+@app.route("/")
+def f():
+	return "Everything is running OK."
+
 import sys
 def generate_all_poss(instructions: list, step_count: int): # instructions in format [({variable, variable}, operator),...]. Variable is int representing variable number, operator is 0 for addition and 1 for multiplication. For example, x3 * x4 is ({3, 4}, 1).
 	if len(instructions) >= step_count:
@@ -10,8 +17,8 @@ def generate_all_poss(instructions: list, step_count: int): # instructions in fo
 	else:
 		return[generate_all_poss(instructions + [({f, s}, o)], step_count)for f in range(len(instructions) + 1)for s in range(len(instructions) + 1)for o in[0,1]]
 
-leng = int(sys.argv[1])
-find = int(sys.argv[2])
+leng = 12
+find = 10407932194664399081925240327364085538615262247266704805319112350403608059673360298012239441732324184842421613954281007791383566248323464908139906605677320762924129509389220345773183349661583550472959420547689811211693677147548478866962501384438260291732348885311160828538416585028255604666224831890918801847068222203140521026698435488732958028878050869736186900714720710555703168729087
 
 def get_values(length):
 	a = [*filter(lambda x:not ({0}, 1) in x, generate_all_poss([], length))]
@@ -42,7 +49,6 @@ def get_values(length):
 				s.append(eval(f"{s[bb]} {['+', '*'][j[1]]} {s[cc]}"))
 		values.append(s[-1])
 	return zip(a, values)
-
 
 s = False
 while not s:
