@@ -1,13 +1,5 @@
 # https://codegolf.stackexchange.com/questions/287678/generate-a-large-number-using-and-%C3%97
 # Input to this program is made as arguments, where the first argument indicates what program length to start from, and 
-
-from flask import Flask
-app = Flask(__name__)
-
-@app.route("/")
-def f():
-	return "Everything is running OK."
-
 import sys
 def generate_all_poss(instructions: list, step_count: int): # instructions in format [({variable, variable}, operator),...]. Variable is int representing variable number, operator is 0 for addition and 1 for multiplication. For example, x3 * x4 is ({3, 4}, 1).
 	if len(instructions) >= step_count:
