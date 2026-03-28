@@ -6,7 +6,7 @@ def generate_all_poss(instructions: list, step_count: int): # instructions in fo
 	if len(instructions) >= step_count:
 		return instructions
 	elif len(instructions) == 0:
-		return generate_all_poss([({0}, 1)], step_count)
+		return generate_all_poss([({0}, 0)], step_count)
 	else:
 		return[generate_all_poss(instructions + [({f, s}, o)], step_count)for f in range(len(instructions) + 1)for s in range(len(instructions) + 1)for o in[0,1]]
 
@@ -14,7 +14,7 @@ leng = int(sys.argv[1])
 find = int(sys.argv[2])
 
 def get_values(length):
-	a = generate_all_poss([], length)
+	a = [*filter(lambda x:not ({0}, 1) in x, generate_all_poss([], length))]
 	try:
 		while type(a[0][0]) is list:
 			b = []
