@@ -1,90 +1,57 @@
 # https://codegolf.stackexchange.com/questions/287678/generate-a-large-number-using-and-%C3%97
 # Input to this program is made as arguments, where the first argument indicates what program length to start from, and 
 
-import math
+import time
+find = 2**1279 - 1
+def get_value(prog: list):
+	s = [1]
+	for i in prog.copy():
+		if len(i[0]) == 1:
+			aa = i[0].pop()
+			i[0].add(aa)
+			if i[1]:
+				s.append(s[aa] * s[aa])
+			else:
+				s.append(s[aa] + s[aa])
+		else:
+			bb = i[0].pop()
+			cc = i[0].pop()
+			i[0].add(bb)
+			i[0].add(cc)
+			if i[1]:
+				s.append(s[bb] * s[cc])
+			else:
+				s.append(s[bb] + s[cc])
+		if s[-1] <= s[-2]:
+			return 0 # PRUNE YOU MONKEY!!!
+	return s[-1]
+def generate_all_poss2(findd: int, step_count: int, require_match: bool, cutoff_point=None):
+	if cutoff_point is None:
+		cutoff_point = step_count
+	if step_count <= 1:
+		yield ([({0}, 0)], 2)
+	else:
+		for prog in map(lambda x: x[0], generate_all_poss2(findd, step_count - 1, False, cutoff_point)):
+			a = filter(lambda x: x[1]**(2**(cutoff_point - step_count)) >= findd and x[1] + cutoff_point - step_count <= findd, (((pp:=prog + [({i,j}, k)]), (ppv:=get_value(pp))) for i in range(step_count) for j in range(step_count) for k in range(2) if not (k and 0 in (i,j)) and not ({i,j}, k) in prog))
+			dup = []
+			for i in a:
+				if i[0] not in dup:
+					dup.append(i[0])
+					if not require_match or i[1] == findd:
+						yield i
 
-def lazy_concat(*a):
-	for i in a:
-		for j in i:
-			yield j
-
-def split_range(num):
-	return lazy_concat(range(3*num//4 - 1, num//2 - 1, -1), range(num - 1, 3*num//4 - 1, -1), range(num//4, num//2), range(num//4))
-
-def eq_mod(a, b):
-	t = ["({1}, 0)", "({1}, 1)"]
-	return a == b or (a in t and b in t)
-
-def contains_duplicate(l):
-	dup = set()
-	for i in l:
-		for j in dup:
-			if eq_mod(str(i), j):
-				return True
-		dup.add(str(i))
-	return False
-
-def numtoradi(num, length):
-	a = []
-	for i in range(1, length+1):
-		a.append(num%i)
-		num = num // i
-	return a
-
-def numtobin(num, length):
-	return [*map(int, bin(num)[2:].zfill(length))]
-
-def generate_all_poss(step_count: int): # instructions in format [({variable, variable}, operator),...]. Variable is int representing variable number, operator is 0 for addition and 1 for multiplication. For example, x3 * x4 is ({3, 4}, 1).
-	for a in split_range(math.factorial(step_count)):
-		for b in split_range(math.factorial(step_count)):
-			for c in split_range(2**step_count):
-				x = numtoradi(a, step_count)
-				y = numtoradi(b, step_count)
-				z = numtobin(c, step_count)
-				w = zip(x, y, z)
-				yield [({i,j}, k) for i,j,k in w]
-				
-
-leng = 12
-find = 10407932194664399081925240327364085538615262247266704805319112350403608059673360298012239441732324184842421613954281007791383566248323464908139906605677320762924129509389220345773183349661583550472959420547689811211693677147548478866962501384438260291732348885311160828538416585028255604666224831890918801847068222203140521026698435488732958028878050869736186900714720710555703168729087
-
-def get_values(length):
-	a = filter(lambda w:not contains_duplicate(w), generate_all_poss(length))
-	used = set()
-	for i in a:
-		if str(i) not in used:
-			used.add(str(i))
-			s = [1]
-			cond = []
-			for j in i:
-				cond.append(not (j[1] and (0 in j[0])))
-				if len(j[0]) == 1:
-					aa = j[0].pop()
-					j[0].add(aa)
-					if j[1]:
-						s.append(s[aa] * s[aa])
-					else:
-						s.append(s[aa] + s[aa])
-				else:
-					bb = j[0].pop()
-					cc = j[0].pop()
-					j[0].add(bb)
-					j[0].add(cc)
-					if j[1]:
-						s.append(s[bb] * s[cc])
-					else:
-						s.append(s[bb] + s[cc])
-			if all(cond):
-				yield i, s[-1]
-
+c = 2
 s = False
+start_time = time.time()
 while not s:
-	for i,j in get_values(leng):
-		print(str(i), "=", j)
-		if j == find:
-			print("solution found for length",leng,"yielding",find,"which is above")
-			s = True
-			break
+	for i in generate_all_poss2(find, c, True):
+		print(i)
+		s = True
+		break
 	if not s:
-		print("no solution found for programs of length",leng,"that yield",find)
-	leng += 1
+		print("no solution for", c, "steps")
+		print("Total time taken:", time.time() - start_time)
+	else:
+		print("solution found!")
+		print("Total time taken:", time.time() - start_time)
+	c += 1
